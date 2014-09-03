@@ -1,6 +1,7 @@
 # congress_twitter.rb
 
 require 'yaml'
+require 'json'
 require 'fileutils'
 require 'open-uri'
 require 'twitter'
@@ -12,19 +13,43 @@ module CongressTwitter
   FileUtils.mkdir_p(PROCESSED_DATA_DIR)
   FileUtils.mkdir_p(RAW_DATA_DIR)
 
-
+  CONGRESS_SOCIAL_YAML_URL = 'https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-social-media.yaml'
+  CONGRESS_CURRENT_INFO_YAML_URL = 'https://github.com/unitedstates/congress-legislators/raw/master/legislators-current.yaml'
   module Fetching
-    CONGRESS_SOCIAL_YAML_URL = 'https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-social-media.yaml'
-    CONGRESS_CURRENT_INFO_YAML_URL = 'https://github.com/unitedstates/congress-legislators/raw/master/legislators-current.yaml'
-
     class << self
-      def fetch_sunlight_data(overwrite = false)
+      def get_sunlight_data(overwrite = false)
         [CONGRESS_SOCIAL_YAML_URL, CONGRESS_CURRENT_INFO_YAML_URL].each do |url|
           puts "Fetching #{url}..."
           fname = File.join(RAW_DATA_DIR, File.basename(url))
           unless File.exists?(fname) && overwrite == true
             open(fname, 'w'){|f| f.write(open(url){|u| u.read })}
           end
+        end
+      end
+
+      # Using the social media YAML listing, fetch user profiles from twitter
+      # and save to disk
+      # ...
+      # expects legislators-social-media.yaml to have been downloaded
+      def get_congress_twitter_profiles
+        social_listings = YAML.load_file(File.join(RAW_DATA_DIR, File.basename(CONGRESS_SOCIAL_YAML_URL)))
+        twitter_names = social_listings.collect{|x| x['social']['twitter'] unless x['social'].nil? }.compact
+        profiles = Twit.fetch_user_profiles(twitter_names)
+
+        profiles.each{|profile| save_raw_data("twitter/profiles/#{profile[:screen_name]}.json", profile) }
+      end
+
+      # Using the social media YAML listing, fetch user profiles from twitter
+      # and save to disk
+      # ...
+      # expects legislators-social-media.yaml to have been downloaded
+      def get_congress_tweets
+        social_listings = YAML.load_file(File.join(RAW_DATA_DIR, File.basename(CONGRESS_SOCIAL_YAML_URL)))
+        twitter_names = social_listings.collect{|x| x['social']['twitter'] unless x['social'].nil? }.compact
+        twitter_names.each do |tname|
+          puts "Fetching #{tname} tweets..."
+          tweets = Twit.fetch_full_user_timeline(tname)
+          save_raw_data("twitter/tweets/#{tname}.json", JSON.pretty_generate(tweets))
         end
       end
 
