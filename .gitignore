@@ -1,3 +1,4 @@
 data-hold/
 .DS_Store
 tmp/
+.credentials.yml
