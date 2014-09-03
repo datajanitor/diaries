@@ -1,4 +1,4 @@
-# ca_public_salaries.rb
+# public_salaries_cal.rb
 # A quickie script to batch download all the raw salary data
 # from publicpay.ca.gov
 #
