@@ -43,13 +43,23 @@ module CongressTwitter
       # and save to disk
       # ...
       # expects legislators-social-media.yaml to have been downloaded
-      def get_congress_tweets
+      def get_congress_tweets(overwrite = false)
         social_listings = YAML.load_file(File.join(RAW_DATA_DIR, File.basename(CONGRESS_SOCIAL_YAML_URL)))
         twitter_names = social_listings.collect{|x| x['social']['twitter'] unless x['social'].nil? }.compact
         twitter_names.each do |tname|
-          puts "Fetching #{tname} tweets..."
-          tweets = Twit.fetch_full_user_timeline(tname)
-          save_raw_data("twitter/tweets/#{tname}.json", JSON.pretty_generate(tweets))
+          if overwrite == true || !File.exists?(File.join(RAW_DATA_DIR, "twitter/tweets/#{tname}.json"))
+            puts "Fetching #{tname} tweets..."
+            begin
+              tweets = Twit.fetch_full_user_timeline(tname)
+            rescue => err
+            # a common error will be Twitter::Error::NotFound
+            # if errors bubble up from .fetch_full_user_timeline, we'll just
+            # output to screen and move on
+              puts err
+            else
+              save_raw_data("twitter/tweets/#{tname}.json", JSON.pretty_generate(tweets))
+            end
+          end
         end
       end
 
