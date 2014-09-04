@@ -6,10 +6,10 @@ require 'fileutils'
 require 'open-uri'
 require 'twitter'
 require 'active_support/core_ext/hash/indifferent_access'
+require 'active_support/core_ext/hash/slice'
 module CongressTwitter
-
-  PROCESSED_DATA_DIR = File.expand_path('../data-hold/processed', __FILE__)
   RAW_DATA_DIR = File.expand_path('../data-hold/raw', __FILE__)
+  PROCESSED_DATA_DIR = File.expand_path('../data-hold/processed', __FILE__)
   FileUtils.mkdir_p(PROCESSED_DATA_DIR)
   FileUtils.mkdir_p(RAW_DATA_DIR)
 
@@ -32,11 +32,21 @@ module CongressTwitter
       # ...
       # expects legislators-social-media.yaml to have been downloaded
       def get_congress_twitter_profiles
+        # initialize the raw data directory
+        dir = File.join RAW_DATA_DIR, "twitter/profiles"
+        FileUtils.mkdir_p(dir)
+        # Load up the social media yaml file as an array
         social_listings = YAML.load_file(File.join(RAW_DATA_DIR, File.basename(CONGRESS_SOCIAL_YAML_URL)))
+        # collect twitter names from the legislators who have them
         twitter_names = social_listings.collect{|x| x['social']['twitter'] unless x['social'].nil? }.compact
+        # fetch from the API
         profiles = Twit.fetch_user_profiles(twitter_names)
 
-        profiles.each{|profile| save_raw_data("twitter/profiles/#{profile[:screen_name]}.json", profile) }
+        profiles.each do |profile|
+          open(File.join(dir, "#{profile[:screen_name]}.json"), 'w') do |f|
+            f.write JSON.pretty_generate profile
+          end
+        end
       end
 
       # Using the social media YAML listing, fetch user profiles from twitter
@@ -44,6 +54,10 @@ module CongressTwitter
       # ...
       # expects legislators-social-media.yaml to have been downloaded
       def get_congress_tweets(overwrite = false)
+        # initialize the raw tweets directory
+        dir = File.join RAW_DATA_DIR, "twitter/tweets"
+        FileUtils.mkdir_p(dir)
+        # Load up the social media yaml file as an array
         social_listings = YAML.load_file(File.join(RAW_DATA_DIR, File.basename(CONGRESS_SOCIAL_YAML_URL)))
         twitter_names = social_listings.collect{|x| x['social']['twitter'] unless x['social'].nil? }.compact
         twitter_names.each do |tname|
@@ -57,7 +71,9 @@ module CongressTwitter
             # output to screen and move on
               puts err
             else
-              save_raw_data("twitter/tweets/#{tname}.json", JSON.pretty_generate(tweets))
+              open(File.join(dir, "#{tname}.json"), 'w') do |f|
+                f.write JSON.pretty_generate tweets
+              end
             end
           end
         end
@@ -72,6 +88,68 @@ module CongressTwitter
           open(fname, 'w'){|f| f.write content }
         end
 
+    end
+  end
+
+
+  module Processing
+    class << self
+      require 'csv'
+      # combines json profiles to one flattened CSV file
+      def profiles_to_csv
+        header_names = %w(id name screen_name created_at location verified statuses_count followers_count friends_count listed_count favourites_count utc_offset time_zone description profile_image_url)
+        csv = CSV.open(File.join(PROCESSED_DATA_DIR, 'all-twitter-profiles.csv'), 'w', headers: true)
+        csv << header_names
+
+        # collect all the fetched profiles
+        Dir.glob(File.join(RAW_DATA_DIR, 'twitter', 'profiles', '*.json')).each do |jfile|
+          profile = JSON.parse(open(jfile){|f| f.read})
+          # force string output from: "Mon Jul 09 22:04:23 +0000 2007"
+          #  to: "2007-07-09 22:04:23 UTC"
+          profile['created_at'] = Time.parse(profile['created_at']).utc.to_s
+          csv << profile.slice(*header_names)
+        end
+
+        csv.close
+      end
+
+      # converts json tweet collections to csvs
+      def tweets_to_csvs
+        tweets_dir = File.join(PROCESSED_DATA_DIR, 'tweets')
+        FileUtils.mkdir_p(tweets_dir)
+        header_names = %w(id user_id screen_name source created_at retweet_count favorite_count text in_reply_to_screen_name in_reply_to_status_id retweeted_status_id)
+        # iterate for each tweets json...remember each json file contains multiple tweets
+        Dir.glob(File.join(RAW_DATA_DIR, 'twitter', 'tweets', '*.json')).each do |jfile|
+          screen_name = File.basename(jfile, '.json')
+          puts "Converting tweets from: #{screen_name}"
+          csv = CSV.open(File.join(tweets_dir, "#{screen_name}.csv"), 'w', headers: true)
+          csv << header_names
+          # open and parse the tweets json
+          tweets = JSON.parse(open(jfile){|f| f.read})
+          tweets.each do |tweet|
+            tweet['screen_name'] = screen_name
+            # force string output from: "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>"
+            #  to: Twitter Web Client
+            tweet['source'] = tweet['source'][/(?<=>).+?(?=<\/a>)/] || tweet['source']
+            tweet['user_id'] = tweet['user']['id']
+            # force string output from: "Mon Jul 09 22:04:23 +0000 2007"
+            #  to: "2007-07-09 22:04:23 UTC"
+            tweet['created_at'] = Time.parse(tweet['created_at']).utc.to_s
+            if( rt = tweet['retweeted_status'] )
+              tweet['retweeted_status_id'] = rt['id']
+            end
+            csv << tweet.slice(*header_names)
+          end
+          csv.close
+        end
+
+
+      end
+
+      private
+        def agg_tweets(fname)
+
+        end
     end
   end
 
