@@ -47,7 +47,9 @@ module CAPublicSalaries
           zip_file.each do |entry|
             # Extract to file/directory/symlink
             puts "Extracting #{entry.name}"
+            # this is probably dangerous if entry.name isn't a root-level filename, oh well
             dest_fname = File.join CSV_DIR, entry.name
+
             entry.extract dest_fname
           end
         end
@@ -79,6 +81,7 @@ module CAPublicSalaries
       CSV.open(File.join(PROCESSED_DATA_DIR, 'combined-data.csv'), 'w', headers: true) do |out_csv|
         out_csv << all_headers.to_a.flatten
         file_handles.each_pair do |csv_name, (hline, file)|
+          # encoding WTF...?
           in_csv = CSV.parse(hline + file.read.force_encoding('iso-8859-1').encode('utf-8'),  headers: true)
           puts "#{csv_name}: #{in_csv.count} rows"
           in_csv.each do |row|
