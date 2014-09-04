@@ -142,9 +142,21 @@ module CongressTwitter
           end
           csv.close
         end
-
-
       end
+
+      # simply take all existing tweet csvs and make a big file
+      def concat_tweet_csvs
+        open(File.join(PROCESSED_DATA_DIR, 'all-tweets.csv'), 'w') do |f|
+          Dir.glob(File.join(PROCESSED_DATA_DIR, 'tweets', '*.csv')).each_with_index do |c, idx|
+            if idx == 0
+              f.write open(c){|x| x.read }
+            else
+              f.write open(c){|x| x.gets; x.read } # all subsequent files, skip the header
+            end
+          end
+        end
+      end
+
 
       private
         def agg_tweets(fname)
@@ -254,8 +266,6 @@ module CongressTwitter
 
         return arr
       end
-
-
     end
   end
 end

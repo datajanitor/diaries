@@ -1,6 +1,6 @@
 # Computational Data Diaries
 
-A collection of data downloading recipe examples and so forth.
+A collection of data downloading recipe examples. I'm using this data for a class, but these examples are meant to show how to break up big data tasks into small pieces.
 
 
 ### Inventory (in-progress)
@@ -8,7 +8,7 @@ A collection of data downloading recipe examples and so forth.
 * California public salaries database - Scraping the links to the zip files, downloading them, and combining the CSV files into one.
 * Congressional tweets - Getting the tweets and profiles of current members of Congress, via batch request to the Twitter API
 * Popular baby names by state - combining the state files into a single CSV and doing some convenient calculations, such as rank-per-state-per-year
-
+* Dallas crime reports - Sanely download hundreds of zip files from a FTP site
 
 ## Purpose
 
