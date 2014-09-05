@@ -15,26 +15,42 @@ module CongressTwitter
   CONGRESS_CURRENT_INFO_YAML_URL = 'https://github.com/unitedstates/congress-legislators/raw/master/legislators-current.yaml'
   CONGRESS_CURRENT_INFO_YAML = DATA_DIR.join('fetched', File.basename(CONGRESS_CURRENT_INFO_YAML_URL))
 
-  def self.setup!
-    %w(fetched unpacked munged).each do |dname|
-      DATA_DIR.join(dname).mkpath
+  class << self
+    def setup!
+      %w(fetched unpacked munged).each do |dname|
+        DATA_DIR.join(dname).mkpath
+      end
+    end
+
+    def fetch!
+      puts "Fetching congressmember data"
+      Fetching.fetch_congressmember_data
+      puts "Fetching twitter profiles"
+      Fetching.fetch_congress_twitter_profiles
+      puts "Fetching tweets"
+      Fetching.fetch_congress_tweets
+
+      nil
+    end
+
+    def unpack!
+      puts "Unpacking profiles t0 csv"
+      Unpacking.profiles_to_csv
+      puts "Unpacking tweets to csvs"
+      Unpacking.tweets_to_csvs
+      puts "Concatenating tweet csvs"
+      Unpacking.concat_tweet_csvs
+
+      nil
+    end
+
+    def munge!
+      # todo
     end
   end
 
   module Fetching
     class << self
-
-      def fetch!
-        puts "Fetching congressmember data"
-        fetch_congressmember_data
-
-        puts "Fetching twitter profiles"
-        fetch_congress_twitter_profiles
-
-        puts "Fetching tweets"
-        fetch_congress_tweets
-      end
-
       def fetch_congressmember_data
         open(CONGRESS_SOCIAL_YAML, 'w'){|f| f.write(open(CONGRESS_SOCIAL_YAML_URL){|u| u.read })}
         open(CONGRESS_CURRENT_INFO_YAML, 'w'){|f| f.write(open(CONGRESS_CURRENT_INFO_YAML_URL){|u| u.read })}
@@ -56,9 +72,8 @@ module CongressTwitter
         profiles = Twit.fetch_user_profiles(twitter_names)
 
         profiles.each do |profile|
-          open(dir.join("#{profile[:screen_name]}.json"), 'w') do |f|
-            f.write JSON.pretty_generate profile
-          end
+          fname = dir.join "#{profile[:screen_name].downcase}.json"
+          open(fname, 'w'){ |f| f.write JSON.pretty_generate profile }
         end
       end
 
@@ -74,8 +89,9 @@ module CongressTwitter
         social_listings = YAML.load_file(CONGRESS_SOCIAL_YAML)
         twitter_names = social_listings.collect{|x| x['social']['twitter'] unless x['social'].nil? }.compact
         twitter_names.each do |tname|
-          fname = dir.join("{tname}.json")
-          if overwrite == true || fname.exist?
+          fname = dir.join("#{tname.downcase}.json")
+          puts fname
+          if overwrite == true || !fname.exist?
             puts "Fetching #{tname} tweets..."
             begin
               tweets = Twit.fetch_full_user_timeline(tname)
@@ -85,9 +101,7 @@ module CongressTwitter
             # output to screen and move on
               puts err
             else
-              open(fname, 'w') do |f|
-                f.write JSON.pretty_generate tweets
-              end
+              open(fname, 'w'){ |f| f.write JSON.pretty_generate tweets }
             end
           end
         end
@@ -99,6 +113,7 @@ module CongressTwitter
   module Unpacking # TODO
     class << self
       require 'csv'
+
       # combines json profiles to one flattened CSV file
       def profiles_to_csv
         header_names = %w(id name screen_name created_at location verified statuses_count followers_count friends_count listed_count favourites_count utc_offset time_zone description profile_image_url)
@@ -119,7 +134,7 @@ module CongressTwitter
 
       # converts json tweet collections to csvs
       def tweets_to_csvs
-        tweets_dir = DATA_DIR.join 'unpacked', 'tweets')
+        tweets_dir = DATA_DIR.join 'unpacked', 'tweets'
         tweets_dir.mkpath
         header_names = %w(id user_id screen_name source created_at retweet_count favorite_count text in_reply_to_screen_name in_reply_to_status_id retweeted_status_id)
         # iterate for each tweets json...remember each json file contains multiple tweets
@@ -148,18 +163,16 @@ module CongressTwitter
         end
       end
 
-      # TODO: delete this, put all tweets into one file to begin with
       # simply take all existing tweet csvs and make a big file
       def concat_tweet_csvs
-        open(File.join(PROCESSED_DATA_DIR, 'all-tweets.csv'), 'w') do |f|
-          Dir.glob(File.join(PROCESSED_DATA_DIR, 'tweets', '*.csv')).each_with_index do |c, idx|
-            if idx == 0
-              f.write open(c){|x| x.read }
-            else
-              f.write open(c){|x| x.gets; x.read } # all subsequent files, skip the header
-            end
-          end
+        output = open(DATA_DIR.join('unpacked', 'all-tweets.csv'), 'w')
+        Dir.glob(DATA_DIR.join('unpacked', 'tweets', '*.csv')).each_with_index do |csv_name, idx|
+          output.write open(csv_name){ |cf|
+            cf.gets unless idx == 0  # all subsequent files, skip the header
+            cf.read
+          }
         end
+        output.close
       end
     end
 

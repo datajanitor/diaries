@@ -2,15 +2,30 @@ require 'pathname'
 module DallasCrimeReports
   DATA_DIR = Pathname.new File.expand_path( '../../data-hold', __FILE__)
 
-  def self.setup!
-    %w(fetched unpacked munged).each do |dname|
-      DATA_DIR.join(dname).mkpath
+  class << self
+    def setup!
+      %w(fetched unpacked munged).each do |dname|
+        DATA_DIR.join(dname).mkpath
+      end
+    end
+
+    def fetch!
+      Fetching.fetch_from_ftp_site
+    end
+
+    def unpack!
+      # todo
+    end
+
+    def munge!
+      # todo
     end
   end
 
+
   module Fetching
     class << self
-      def fetch!
+      def fetch_from_ftp_site
         require 'net/ftp'
         ftp = Net::FTP.new('66.97.146.93')
         ftp.login
@@ -30,9 +45,9 @@ module DallasCrimeReports
   end # module Fetching
 
   module Unpacking
-    require 'zip'
     class << self
-      def unpack!
+      def unpack_zips
+        require 'zip'
         Dir.glob(DATA_DIR.join('fetched', '*.zip')).each do |zipname|
           puts zipname
           # TODO unzip
@@ -43,10 +58,7 @@ module DallasCrimeReports
 
   module Munging
     class << self
-      def munge!
-        require 'nokogiri'
 
-      end
     end
   end # module Munging
 end
