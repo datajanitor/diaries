@@ -1,7 +1,29 @@
-# Computational Data Diaries
+# Data Janitor Diaries
 
-A collection of data downloading recipe examples. I'm using this data for a class, but these examples are meant to show how to break up big data tasks into small pieces.
+A collection of data janitor diaries, i.e. the steps needed to collect, clean, and organize data __before__ it can properly be analyzed, investigated, and published.
 
+This repo consists of example scripts that are focused solely on downloading, unpacking, re-combining data files. There are some examples of analyses as a proof-of-concept, but for the most part, these are recipes you would run _before_ involving a database or statistical software package.
+
+## Motivation
+
+From an Aug. 8, 2014, article in the New York Times, ["For Big-Data Scientists, ‘Janitor Work’ Is Key Hurdle to Insights", New York Times](http://www.nytimes.com/2014/08/18/technology/for-big-data-scientists-hurdle-to-insights-is-janitor-work.html):
+
+> Yet far too much handcrafted work — what data scientists call “data wrangling,” “data munging” and “data janitor work” — is still required. Data scientists, according to interviews and expert estimates, __spend from 50 percent to 80 percent of their time mired in this more mundane labor__ of collecting and preparing unruly digital data, before it can be explored for useful nuggets.
+
+In my professional experience, data munging may seem mundane, but doing it almost always uncover useful information (and flaws) about a dataset. But you don't have to be [Henry Ford](http://corporate.ford.com/news-center/press-releases-detail/677-5-dollar-a-day) to know that if something sucks up 80 percent of your professional time, then you ought to become better at it.
+
+## Useful programming
+
+Novice programmers make the mistake of saving up their coding skills to use on a big enough idea. But being novices, they either don't have "(good) big ideas", or don't know where programming would even fit in.
+
+Data munging is a great way to practice programming. The tasks are often easy enough for brute-force algorithms. And even if your solution is sub-optimal, it likely is still much faster than tackling it as old-fashioned grunt work.
+
+One of my intentions for this repo is to spark ideas on the kinds of mundane things that can be made easier through programming.
+
+
+### Todo: Conventions
+
+(the repo is in-progress and being updated when I feel like it. Currently, it's a mishmash of conventions and styles that I'm going to make more uniform)
 
 ### Inventory (in-progress)
 
@@ -10,14 +32,5 @@ A collection of data downloading recipe examples. I'm using this data for a clas
 * Popular baby names by state - combining the state files into a single CSV and doing some convenient calculations, such as rank-per-state-per-year
 * Dallas crime reports - Sanely download hundreds of zip files from a FTP site
 
-## Purpose
-
-For my Public Affairs Data Journalism I class (Fall 2014), I need to have cleaned and specifically-packaged datasets to use as examples. The scripts in these repos handle the downloading, organizing, and automated pruning and aggregation I need to do for my students, as I can't expect all/any of them to know enough SQL or programming to wrangle large, unorganized datasets.
-
-Understanding these scripts aren't part of the class, though in my winter class, which studies computational methods in data journalism, I'll expect students to use computational thinking to tackle data problems.
-
-These aren't great scripts or even best-practices. They're just things I whipped up that were, in my opinion, less maddening than doing things the manual way. 
-
-A lot of novice programmers ask how to use what they've learned in class in real-life and my advice is: use programming to make your own life less annoying. Since my life currently involves getting and organizing data for class, these scripts are what I've written to ease my own pain.
 
 
