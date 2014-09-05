@@ -1,12 +1,7 @@
 require 'pathname'
 module DallasCrimeReports
-
-# TODO: Workspace
-# TODO: Fetching
-# TODO: Unpacking
-# TODO: Munging
-
   DATA_DIR = Pathname.new File.expand_path( '../../data-hold', __FILE__)
+
   def self.setup!
     %w(fetched unpacked munged).each do |dname|
       DATA_DIR.join(dname).mkpath
@@ -14,26 +9,44 @@ module DallasCrimeReports
   end
 
   module Fetching
-    def fetch!
-      require 'net/ftp'
-      ftp = Net::FTP.new('66.97.146.93')
-      ftp.login
-      ftp.nlst('*.zip').each do |zipname|
-        puts "Downloading #{zipname}"
-        ftp.getbinaryfile(zipname, DATA_DIR.join('fetched', File.basename(zipname))
-        sleep rand(5) + 1
+    class << self
+      def fetch!
+        require 'net/ftp'
+        ftp = Net::FTP.new('66.97.146.93')
+        ftp.login
+        # first, download the root-level zips
+        ftp.nlst('*').select{|f| f =~ /OFFENSE/ }.each do |zipname|
+          fname = DATA_DIR.join('fetched', File.basename(zipname))
+          if fname.exist?
+            puts "#{fname} already exists"
+          else
+            puts "Downloading #{zipname}"
+            ftp.getbinaryfile(zipname, fname)
+            sleep rand 1
+          end
+        end
       end
     end
-  end
+  end # module Fetching
 
   module Unpacking
     require 'zip'
-    # unzip files into unpacked
-  end
+    class << self
+      def unpack!
+        Dir.glob(DATA_DIR.join('fetched', '*.zip')).each do |zipname|
+          puts zipname
+          # TODO unzip
+        end
+      end
+    end
+  end # module Unpacking
 
   module Munging
-    def munge!
+    class << self
+      def munge!
+        require 'nokogiri'
 
+      end
     end
-  end
+  end # module Munging
 end
