@@ -7,9 +7,9 @@ The original LESO data can be found at NPRviz's github repo: https://github.com/
 
 ## Draft cleanup instructions
 
-#### `FIPS_CountyName.txt`
+### `FIPS_CountyName.txt`
 
-Sample:
+##### Sample:
 
     00000 UNITED STATES
     01000 ALABAMA
@@ -19,7 +19,12 @@ Sample:
     01007 Bibb County, AL
     01009 Blount County, AL
 
-Goal:
+##### Problem:
+
+This needs to be turned into a comma-delimited file. And the rows without actual counties, e.g. `01000 ALABAMA`, can be deleted for our eventual purpose.
+
+
+##### Goal:
 
     FIPS,County,State
     01001,AUTAUGA COUNTY,AL
@@ -28,23 +33,32 @@ Goal:
     01007,BIBB COUNTY,AL
 
 
-Cleanup:
+##### Cleanup:
 
 1. Use regex in a text editor
+
   __Find:__ `(\d{5}) (.+?), (.+)`
+
   __Replace__ `\1,\U\2,\3` (or: `$1,\U$2,$3`)
 
 2. Use a regex to delete the rows that look like:
-   `00000 UNITED STATES`
-   `01000 ALABAMA`
+
+   ~~~
+   00000 UNITED STATES
+   01000 ALABAMA
+   ~~~
 
   __Find:__ `^\d{5} .+\n`
+
   __Replace__ `[with nothing]`
 
 3. Add a headers column:
+
     `FIPS,County,State`
 
-#### `DataDict.txt`
+
+
+### `DataDict.txt`
   
 This file does not need to be cleaned, but we will refer to it later for `Data_Item`. It's not worth putting this directly into the database.
 
