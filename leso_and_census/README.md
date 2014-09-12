@@ -94,9 +94,10 @@ __Database__
 
 - Import as CSV
 - Execute query:
-  ~~~sql
-  DELETE FROM `psc-codes.csv` WHERE END_DATE != '' AND END_DATE IS NOT NULL
-  ~~~
+ 
+    ~~~sql
+    DELETE FROM `psc-codes.csv` WHERE END_DATE != '' AND END_DATE IS NOT NULL
+    ~~~
 
 
 
