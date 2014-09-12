@@ -1,0 +1,53 @@
+Data_Item                                     Item_Description                                   Unit Decimal  US_Total  Minimum   Maximum Source
+STATECOU  FIPS State and County code
+PST045213 Population, 2013 estimate                                                               ABS    0    316128839       90 316128839 CENSUS
+PST040210 Population, 2010 (April 1) estimates base                                               ABS    0    308747716       82 308747716 CENSUS
+PST120213 Population, percent change - April 1, 2010 to July 1, 2013                              PCT    1          2.4    -18.6      46.4 CENSUS
+POP010210 Population, 2010                                                                        ABS    0    308745538       82 308745538 CENSUS
+AGE135213 Persons under 5 years, percent, 2013                                                    PCT    1          6.3      0.0      14.0 CENSUS
+AGE295213 Persons under 18 years, percent, 2013                                                   PCT    1         23.3      0.0      42.2 CENSUS
+AGE775213 Persons 65 years and over, percent, 2013                                                PCT    1         14.1      3.8      51.6 CENSUS
+SEX255213 Female persons, percent, 2013                                                           PCT    1         50.8     29.9      57.0 CENSUS
+RHI125213 White alone, percent, 2013                                                              PCT    1         77.7      4.9      99.1 CENSUS
+RHI225213 Black or African American alone, percent, 2013                                          PCT    1         13.2      0.0      85.3 CENSUS
+RHI325213 American Indian and Alaska Native alone, percent, 2013                                  PCT    1          1.2      0.0      92.9 CENSUS
+RHI425213 Asian alone, percent, 2013                                                              PCT    1          5.3      0.0      42.6 CENSUS
+RHI525213 Native Hawaiian and Other Pacific Islander alone, percent, 2013                         PCT    1          0.2      0.0      47.8 CENSUS
+RHI625213 Two or More Races, percent, 2013                                                        PCT    1          2.4      0.0      29.5 CENSUS
+RHI725213 Hispanic or Latino, percent, 2013                                                       PCT    1         17.1      0.2      95.7 CENSUS
+RHI825213 White alone, not Hispanic or Latino, percent, 2013                                      PCT    1         62.6      3.2      98.9 CENSUS
+POP715212 Living in same house 1 year & over, percent, 2008-2012                                  PCT    1         84.8     50.8     100.0 CENSUS
+POP645212 Foreign born persons, percent, 2008-2012                                                PCT    1         12.9      0.0      58.9 CENSUS
+POP815212 Language other than English spoken at home, pct age 5+, 2008-2012                       PCT    1         20.5      0.0      95.4 CENSUS
+EDU635212 High school graduate or higher, percent of persons age 25+, 2008-2012                   PCT    1         85.7     44.9      97.5 CENSUS
+EDU685212 Bachelor's degree or higher, percent of persons age 25+, 2008-2012                      PCT    1         28.5      3.7      72.8 CENSUS
+VET605212 Veterans, 2008-2012                                                                     ABS    0     21853912        2  21853912 CENSUS
+LFE305212 Mean travel time to work (minutes), workers age 16+, 2008-2012                          MIN    1         25.4      4.3      42.6 CENSUS
+HSG010213 Housing units, 2013                                                                     ABS    0    132802859       50 132802859 CENSUS
+HSG445212 Homeownership rate, 2008-2012                                                           PCT    1         65.5      0.0      94.7 CENSUS
+HSG096212 Housing units in multi-unit structures, percent, 2008-2012                              PCT    1         25.9      0.0      98.4 CENSUS
+HSG495212 Median value of owner-occupied housing units, 2008-2012                                 DOL    0       181400    19400    944100 CENSUS
+HSD410212 Households, 2008-2012                                                                   ABS    0    115226802       35 115226802 CENSUS
+HSD310212 Persons per household, 2008-2012                                                        AVG    2         2.61     1.29      4.70 CENSUS
+INC910212 Per capita money income in past 12 months (2012 dollars), 2008-2012                     DOL    0        28051     8809     61951 CENSUS
+INC110212 Median household income, 2008-2012                                                      DOL    0        53046    19624    122844 CENSUS
+PVY020212 Persons below poverty level, percent, 2008-2012                                         PCT    1         14.9      0.0      49.5 CENSUS
+BZA010212 Private nonfarm establishments, 2012                                                    ABS    0      7431808        2   7431808 CENSUS
+BZA110212 Private nonfarm employment,  2012                                                       ABS    0    115938468       35 115938468 CENSUS
+BZA115212 Private nonfarm employment, percent change, 2011-2012                                   PCT    1          2.2    -83.8     241.3 CENSUS
+NES010212 Nonemployer establishments, 2012                                                        ABS    0     22735915       16  22735915 CENSUS
+SBO001207 Total number of firms, 2007                                                             ABS    0     27092908       27  27092908 CENSUS
+SBO315207 Black-owned firms, percent, 2007                                                        PCT    1          7.1      0.2      66.7 CENSUS
+SBO115207 American Indian- and Alaska Native-owned firms, percent, 2007                           PCT    1          0.9      0.2      71.8 CENSUS
+SBO215207 Asian-owned firms, percent, 2007                                                        PCT    1          5.7      0.3      56.6 CENSUS
+SBO515207 Native Hawaiian- and Other Pacific Islander-owned firms, percent, 2007                  PCT    1          0.1      0.0      10.5 CENSUS
+SBO415207 Hispanic-owned firms, percent, 2007                                                     PCT    1          8.3      0.3      78.0 CENSUS
+SBO015207 Women-owned firms, percent, 2007                                                        PCT    1         28.8      6.5      56.2 CENSUS
+MAN450207 Manufacturers shipments, 2007 ($1,000)                                                  TH$    0   5319456312    569035319456312 CENSUS
+WTN220207 Merchant wholesaler sales, 2007 ($1,000)                                                TH$    0   4174286516        04174286516 CENSUS
+RTN130207 Retail sales, 2007 ($1,000)                                                             TH$    0   3917663456        03917663456 CENSUS
+RTN131207 Retail sales per capita, 2007                                                           DOL    0        12990        0     80800 CENSUS
+AFN120207 Accommodation and food services sales, 2007 ($1,000)                                    TH$    0    613795732        0 613795732 CENSUS
+BPS030212 Building permits, 2012                                                                  ABS    0       829658        0    829658 CENSUS
+LND110210 Land area in square miles, 2010                                                         SQM    2   3531905.43        23531905.43 CENSUS
+POP060210 Population per square mile, 2010                                                        RTE    1         87.4      0.0   69467.5 CENSUS
