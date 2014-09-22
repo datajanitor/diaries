@@ -5,6 +5,8 @@ A variation of the cleanup and joining done for the NPR story, ["MRAPs And Bayon
 The original LESO data can be found at NPRviz's github repo: https://github.com/nprapps/leso/
 
 
+To add: [County Characteristics Datasets](Census http://www.census.gov/popest/data/counties/asrh/2013/CC-EST2013-ALLDATA.html)
+
 ## Draft cleanup instructions
 
 ### `FIPS_CountyName.txt`
@@ -112,6 +114,52 @@ __Database__
     ~~~sql
     DELETE FROM `psc-codes.csv` WHERE END_DATE != '' AND END_DATE IS NOT NULL
     ~~~
+
+
+
+
+### `leso-csv-files`
+
+(currently not in the repo)
+
+
+Cleaning steps:
+
+To normalize all the dates: 
+
+There are two date formats:
+
+- `6/11/10`
+- `20120612`
+
+We want:  `2010-06-11` and `2012-06-12`
+
+__Find:__ `\d{1,2}\/\d{1,2}/\d{1,2}$`
+
+(note that this works since we know there are no pre-2000 years):
+
+__Replace:__ `20\3-\1-\2`
+
+
+__Find:__ `(\d{4})(\d{2})(\d{2})$`
+
+__Replace:__ `\1-\2-\3`
+
+Fix up non-padded zeroes
+
+__Find:__ `(\d{4})-(\d{1})-(\d{1,2})$`
+
+__Replace:__ `\1-0\2-\3`
+
+
+__Find:__ `(\d{4})-(\d{2})-(\d{1})$`
+
+__Replace:__ `\1-\2-0\3`
+
+
+Remove dollar signs (to make for easier import into a database)
+ 
+(use standard find and replace)
 
 
 
