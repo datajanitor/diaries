@@ -1,7 +1,6 @@
 require 'fileutils'
 require 'zip'
 require 'open-uri'
-
 module SSAStateBabyNames
   DATA_SOURCE_URL = 'http://www.ssa.gov/oact/babynames/state/namesbystate.zip'
 
@@ -32,7 +31,7 @@ module SSAStateBabyNames
     def combine
       require 'csv'
       csv = CSV.open(File.join(PROCESSED_DATA_DIR, 'all-states.csv'), 'w')
-      csv << %w(state gender year name count rank rank_change per_100k per_100k_change)
+      csv << %w(state sex year name count count_per_100k rank count_change count_per_100k_change rank_change)
       txtfiles = Dir.glob(File.join RAW_DATA_DIR, '*.TXT')
       txtfiles.each do |txt_name|
         puts "Adding #{File.basename txt_name}"
@@ -48,7 +47,7 @@ module SSAStateBabyNames
           total_babies = rows.inject(0){|sum, r| sum += r[4].to_i }
           last_rank = 1
           last_baby_count = 0
-          current_year = rows.each_with_index.inject({}) do |hsh, (row, idx)|
+          current_year = rows.each_with_index.inject({}) do |cy_hsh, (row, idx)|
             current_baby_count = row[4].to_i
             if last_baby_count == current_baby_count
               # this is a tie, so rank should be the same as the last
@@ -59,16 +58,22 @@ module SSAStateBabyNames
               last_baby_count = current_baby_count
             end
 
-            per_100k = (current_baby_count[4].to_i * 100000.0 / total_babies).round(1)
-            # calculate change from last year
+            per_100k = (current_baby_count * 100000.0 / total_babies).round            # calculate change from last year
             p_row = prev_year[row[3]]
-            rank_change = p_row.nil? ? nil : -(rank - p_row[0])  # we want the inverse of the difference
-            per_100k_change = p_row.nil? ? nil : (per_100k - p_row[1]).round(1)
-            csv << (row << rank << rank_change << per_100k << per_100k_change)
+            if p_row.nil?
+              count_change = 0
+              rank_change = 0
+              per_100k_change = 0
+            else
+              count_change = current_baby_count - p_row[0]
+              rank_change =  p_row[2] - rank  # we want the inverse of the difference
+              per_100k_change = per_100k - p_row[1]
+            end
+            csv << (row << per_100k << rank << count_change <<  per_100k_change << rank_change )
             # use name field as the key
-            hsh[row[3]] = [rank, per_100k]
+            cy_hsh[row[3]] = [current_baby_count, per_100k, rank]
 
-            hsh
+            cy_hsh
           end
           prev_year = current_year
         end

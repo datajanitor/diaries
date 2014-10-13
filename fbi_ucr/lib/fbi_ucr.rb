@@ -32,11 +32,12 @@ module FbiUcr
         # this needed to prevent Net::HTTP::Persistent::Errors
         # https://github.com/sparklemotion/mechanize/issues/123
         agent.read_timeout = 60
+        agent.idle_timeout = 0.9
         # fetch the first form
         agent.get STARTING_URL
         form_for_states = agent.page.forms[0]
 
-        form_for_states.field_with(name: 'StateId').options.each do |state_opt|
+        form_for_states.field_with(name: 'StateId').options.shuffle.each do |state_opt|
           state_opt.select  # this sets the state field
           puts "State: #{state_opt.text.strip} - #{state_opt.value}"
           form_for_states.submit
