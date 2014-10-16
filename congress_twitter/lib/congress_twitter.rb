@@ -134,7 +134,7 @@ module CongressTwitter
             tweet['user_id'] = tweet['user']['id']
             # force string output from: "Mon Jul 09 22:04:23 +0000 2007"
             #  to: "2007-07-09 22:04:23 UTC"
-            tweet['created_at'] = Time.parse(tweet['created_at']).utc.to_s
+            tweet['created_at'] = Time.parse(tweet['created_at']).utc.strftime('%F %T')
             if( rt = tweet['retweeted_status'] )
               tweet['retweeted_status_id'] = rt['id']
             end
@@ -244,8 +244,8 @@ module CongressTwitter
           Dir.glob(DATA_DIR.join('fetched', 'profiles', '*.json')).each do |jfile|
             profile = JSON.parse(open(jfile){|f| f.read})
             # force string output from: "Mon Jul 09 22:04:23 +0000 2007"
-            #  to: "2007-07-09 22:04:23 UTC"
-            profile['created_at'] = Time.parse(profile['created_at']).utc.to_s
+            #  to: "2007-07-09 22:04:23 -0000"
+            profile['created_at'] = Time.parse(profile['created_at']).utc.strftime('%F %T')
             csv << profile.slice(*header_names)
           end
 
