@@ -134,7 +134,7 @@ There are two date formats:
 
 We want:  `2010-06-11` and `2012-06-12`
 
-__Find:__ `\d{1,2}\/\d{1,2}/\d{1,2}$`
+__Find:__ `(\d{1,2})\/(\d{1,2})/(\d{1,2})$`
 
 (note that this works since we know there are no pre-2000 years):
 
@@ -163,3 +163,10 @@ Remove dollar signs (to make for easier import into a database)
 
 
 
+More:
+
+Create NSN4:
+
+`,(\d{4})(-\w{2}-\w{3,4}-\w{3,4})`
+
+Replace: `,\1,\1\2`
