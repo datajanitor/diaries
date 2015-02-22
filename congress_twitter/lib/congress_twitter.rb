@@ -2,11 +2,11 @@
 require 'pathname'
 require 'yaml'
 require 'json'
+require 'pry'
 require 'fileutils'
 require 'open-uri'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/hash/slice'
-require 'pathname'
 module CongressTwitter
   DATA_DIR = Pathname.new File.expand_path( '../../data-hold', __FILE__)
   CONGRESS_SOCIAL_YAML_URL = 'https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-social-media.yaml'
@@ -26,6 +26,8 @@ module CongressTwitter
       Fetching.fetch_congressmember_data
       puts "Fetching twitter profiles"
       Fetching.fetch_congress_twitter_profiles
+      puts "Fetching friend_ids"
+      Fetching.fetch_congress_friend_ids
       puts "Fetching tweets"
       Fetching.fetch_congress_tweets
 
@@ -75,6 +77,76 @@ module CongressTwitter
         end
       end
 
+
+      # quickie hack
+      # expects fetched/friend_ids to have been populated
+      def quickie_fetch_friends_by_ids
+        require_relative './twit'
+
+        dir = DATA_DIR.join 'fetched', 'friend_objects'
+        dir.mkpath
+
+        ids = `cat data-hold/fetched/friend_ids/*.txt`.split("\n").map{|s| s.to_i }.uniq
+        puts "Total ids: #{ids.count}"
+        already_gathered_ids = Dir.glob(dir.join('*.json')).map{|f| File.basename(f, '.json').to_i  }
+        remaining_ids = ids - already_gathered_ids
+        puts "Remaining ids: #{remaining_ids.count}"
+
+        count=0
+        remaining_ids.each_slice(100) do |arr|
+          count += 1
+          puts "On count: #{count}"
+          begin
+            users = Twit.fetch_users_by_ids(arr)
+          rescue Twitter::Error::TooManyRequests => err
+            puts err
+            puts "Sleeping for 30"
+            sleep 30
+            retry
+          rescue Twitter::Error::NotFound => err
+            puts err
+            puts "moving on..."
+          else
+            users.each do |u|
+              id = u.id
+              open(dir.join("#{id}.json"), 'w'){|f| f.write JSON.pretty_generate(u.to_h )}
+            end
+            sleep 10
+          end
+        end
+      end
+
+
+
+      def fetch_congress_friend_ids(overwrite = false)
+        require_relative './twit'
+        # initialize the raw tweets directory
+        dir = DATA_DIR.join 'fetched', 'friend_ids'
+        dir.mkpath
+        # Load up the social media yaml file as an array
+        social_listings = YAML.load_file(CONGRESS_SOCIAL_YAML)
+        twitter_names = social_listings.collect{|x| x['social']['twitter'] unless x['social'].nil? }.compact
+        twitter_names.each do |tname|
+          fname = dir.join("#{tname.downcase}.txt")
+          puts fname
+          if overwrite == true || !fname.exist?
+            puts "Fetching #{tname} friend ids..."
+            begin
+              ids = Twit.fetch_full_user_friend_ids(tname)
+            rescue => err
+            # a common error will be Twitter::Error::NotFound
+            # if errors bubble up from .fetch_full_user_timeline, we'll just
+            # output to screen and move on
+              puts err
+            else
+              open(fname, 'w'){ |f| f.puts ids }
+              sleep 2
+            end
+          end
+        end
+
+      end # end congress followings
+
       # Using the social media YAML listing, fetch user profiles from twitter
       # and save to disk
       # ...
@@ -112,6 +184,7 @@ module CongressTwitter
   module Unpacking # TODO
     class << self
       require 'csv'
+
 
 
       # converts json tweet collections to csvs
@@ -179,6 +252,20 @@ module CongressTwitter
         make_congress_tweets_csv
 
         true
+      end
+
+      def quickie_extract_friend_object_attributes
+        obj_dir = DATA_DIR.join 'fetched', 'friend_objects'
+        files = Dir.glob(obj_dir.join '*.json')
+        arr = []
+        atts = %w(name screen_name id followers_count friends_count statuses_count listed_count verified description url)
+        files.each do |f|
+          j = JSON.parse(open(f){|g| g.read})
+          arr << atts.inject({}){|h, a| h[a] = j[a]; h }
+        end
+
+        fname = DATA_DIR.join('munged', 'friend_objects_extract.json')
+        open(fname, 'w'){ |f|  f.write arr.to_json}
       end
 
       private

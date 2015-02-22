@@ -43,13 +43,68 @@ module Twit
       return tweets.collect(&:to_h)
     end
 
+    # returns a cursor
+    def fetch_user_friend_ids(screen_name, options = {})
+      opts = HashWithIndifferentAccess.new(options)
+      opts[:count] ||= 5000
+
+      init_client.friend_ids(screen_name, opts)
+    end
+
+    def fetch_users_by_ids(arr, options = {})
+      init_client.users(arr)
+    end
+
+
+      # fetch the maximum number of tweets allowed
+    # pass in options[:retry] to handle rate limit errors
+    def fetch_full_user_friend_ids(screen_name, options = {})
+      opts = HashWithIndifferentAccess.new(options)
+      retries = opts.delete(:retry) == false ? 0 : 8
+      be_verbose = opts.delete(:verbose) == false ? false : true
+      all_friends = []
+      while opts[:cursor] != 0
+        puts "Friends collected: #{all_friends.count}; cursor: #{opts[:cursor]}" if be_verbose
+        begin
+          cursor = fetch_user_friend_ids(screen_name, opts)
+        rescue Twitter::Error::TooManyRequests => err
+          if retries > 0
+            retries -= 1
+            sleep_time = retries > 3 ? 5 : err.rate_limit.reset_in + 1
+            puts "Error: #{err}", "Sleeping for #{sleep_time}" if be_verbose
+            sleep sleep_time
+          else
+            raise err
+          end
+        rescue => err
+          if TWITTER_500_ERRORS.include?(err.class) && retries > 0
+            retries -= 1
+            # sleep for two minutes
+            sleep_time = 120
+            puts "Error: #{err}", "Sleeping for #{sleep_time}" if be_verbose
+            sleep sleep_time
+            retry
+          else
+            raise err
+          end
+        else
+          all_friends.concat cursor.attrs[:ids]
+          opts[:cursor] = cursor.attrs[:next_cursor] || 0
+        end
+      end
+
+      return all_friends
+    end
+
+
+
     # fetch the maximum number of tweets allowed
     # pass in options[:retry] to handle rate limit errors
     def fetch_full_user_timeline(screen_name, options={})
       opts = HashWithIndifferentAccess.new(options)
       opts[:max_id] ||= MAX_TWEET_ID
       opts[:since_id] ||= 1
-      retries = opts.delete(:retry) == false ? 0 : 2
+      retries = opts.delete(:retry) == false ? 0 : 6
       be_verbose = opts.delete(:verbose) == false ? false : true
       all_tweets = []
       while opts[:max_id] > opts[:since_id]
@@ -59,7 +114,11 @@ module Twit
         rescue Twitter::Error::TooManyRequests => err
           if retries > 0
             retries -= 1
-            sleep_time = err.rate_limit.reset_in + 1
+            if retries > 3
+              sleep_time = 20
+            else
+              sleep_time = err.rate_limit.reset_in + 1
+            end
             puts "Error: #{err}", "Sleeping for #{sleep_time}" if be_verbose
             sleep sleep_time
           else
