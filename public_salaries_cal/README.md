@@ -32,3 +32,9 @@ The script consists of three methods:
 The result is a 1.2GB file stored at `./data-hold/processed/combined-data.csv`
 
 
+## Data import errors
+
+When going into MySQL
+
+    [ERROR in row 2882737] Data truncated for column 'Entity Population' at row 1
+    [ERROR in row 4186954] Data truncated for column 'Total Retirement and Health Cost' at row 1
